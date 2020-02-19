@@ -2,9 +2,10 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import api from '../../services/api';
+import { MdNavigateNext, MdNavigateBefore } from 'react-icons/md';
 
 import Container from '../../components/Container';
-import { Loading, Owner, IssueList, IssueStatus } from './styles';
+import { Loading, Owner, IssueList, IssueStatus, Pagination } from './styles';
 
 export default class Repository extends Component {
   static propTypes = {
@@ -19,6 +20,7 @@ export default class Repository extends Component {
     repository: {},
     issues: [],
     loading: true,
+    page: 1,
   };
 
   async componentDidMount() {
@@ -32,6 +34,7 @@ export default class Repository extends Component {
         params: {
           state: 'all',
           per_page: 5,
+          page: 1,
         }
       })
     ]);
@@ -41,25 +44,34 @@ export default class Repository extends Component {
       issues: issues.data,
       loading: false,
       status: 'all',
+      page: 1,
     });
+  }
+
+  async componentDidUpdate(_, prevState) {
+    if (prevState.status !== this.state.status || prevState.page !== this.state.page){
+      const issues = await api.get(`/repos/${this.state.repository.full_name}/issues`, {
+        params: {
+          state: this.state.status,
+          per_page: 5,
+          page: this.state.page,
+        }
+      });
+
+      this.setState({ issues: issues.data });
+    }
   }
 
   async handleShowIssues(status) {
-    const issues = await api.get(`/repos/${this.state.repository.full_name}/issues`, {
-      params: {
-        state: status,
-        per_page: 5,
-      }
-    });
+    this.setState({ status: status });
+  }
 
-    this.setState({
-      issues: issues.data,
-      status: status,
-    });
+  async handlePageChange(increase) {
+    this.setState({page: this.state.page + increase});
   }
 
   render () {
-    const { repository, issues, loading } = this.state;
+    const { repository, issues, loading, page, status } = this.state;
 
     if (loading) {
       return <Loading>Carregando...</Loading>;
@@ -75,9 +87,9 @@ export default class Repository extends Component {
         </Owner>
 
         <IssueStatus>
-          <button onClick={() => this.handleShowIssues('all')}>Todas</button>
-          <button onClick={() => this.handleShowIssues('open')}>Abertas</button>
-          <button onClick={() => this.handleShowIssues('closed')}>Fechadas</button>
+          <button onClick={() => this.handleShowIssues('all')}>All</button>
+          <button onClick={() => this.handleShowIssues('open')}>Open</button>
+          <button onClick={() => this.handleShowIssues('closed')}>Closed</button>
         </IssueStatus>
 
         <IssueList>
@@ -96,6 +108,16 @@ export default class Repository extends Component {
             </li>
           ))}
         </IssueList>
+
+        <Pagination>
+          <button disabled={page === 1} onClick={() => this.handlePageChange(-1)}>
+            <MdNavigateBefore color="#fff" />
+          </button>
+          <strong>{`${page} - ${status}`}</strong>
+          <button onClick={() => this.handlePageChange(+1)}>
+            <MdNavigateNext color="#fff" />
+          </button>
+        </Pagination>
       </Container>
     );
   }

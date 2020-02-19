@@ -125,5 +125,43 @@ export const IssueStatus = styled.div`
     & + button {
       margin-left: 10px;
     }
+
+    &:hover {
+      background: #7159b1;
+    }
+  }
+`;
+
+export const Pagination = styled.div`
+  margin-top: 10px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  height: 50px;
+  border-radius: 4px;
+
+  button {
+    border: 0;
+    background: #7159c1;
+    border-radius: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 32px;
+    height: 32px;
+
+    &:hover {
+      background: #7159b1;
+    }
+
+    &:disabled {
+      background: #999;
+    }
+  }
+
+  strong {
+    text-transform: capitalize;
   }
 `;
