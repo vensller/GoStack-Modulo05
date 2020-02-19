@@ -156,8 +156,9 @@ export const Pagination = styled.div`
       background: #7159b1;
     }
 
-    &:disabled {
-      background: #999;
+    &[disabled] {
+      cursor: not-allowed;
+      opacity: 0.6;
     }
   }
 
