@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import api from '../../services/api';
 
 import Container from '../../components/Container';
-import { Loading, Owner, IssueList } from './styles';
+import { Loading, Owner, IssueList, IssueStatus } from './styles';
 
 export default class Repository extends Component {
   static propTypes = {
@@ -30,7 +30,7 @@ export default class Repository extends Component {
       api.get(`/repos/${repoName}`),
       api.get(`/repos/${repoName}/issues`, {
         params: {
-          state: 'open',
+          state: 'all',
           per_page: 5,
         }
       })
@@ -40,6 +40,21 @@ export default class Repository extends Component {
       repository: repository.data,
       issues: issues.data,
       loading: false,
+      status: 'all',
+    });
+  }
+
+  async handleShowIssues(status) {
+    const issues = await api.get(`/repos/${this.state.repository.full_name}/issues`, {
+      params: {
+        state: status,
+        per_page: 5,
+      }
+    });
+
+    this.setState({
+      issues: issues.data,
+      status: status,
     });
   }
 
@@ -58,6 +73,12 @@ export default class Repository extends Component {
           <h1>{repository.name}</h1>
           <p>{repository.description}</p>
         </Owner>
+
+        <IssueStatus>
+          <button onClick={() => this.handleShowIssues('all')}>Todas</button>
+          <button onClick={() => this.handleShowIssues('open')}>Abertas</button>
+          <button onClick={() => this.handleShowIssues('closed')}>Fechadas</button>
+        </IssueStatus>
 
         <IssueList>
           {issues.map(issue => (
